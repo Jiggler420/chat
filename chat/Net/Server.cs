@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using client.Net.IO;
+using System.Windows.Documents;
 
 namespace client.Net
 {
@@ -15,50 +16,80 @@ namespace client.Net
 
         public PacketReader PacketReader;
         
-        public event Action connected;  //Event für die erfolgreiche Verbindung
+        public event Action connected;      //Event für die erfolgreiche Verbindung
+        public event Action msgRecieved;    //Event für eine empfangene Nachricht
+        public event Action disconnected;   //Event für eine verlorene Verbindung 
 
         public Server() { 
             tcpClient = new TcpClient(); //initalisieren 
         }
 
-        public void ConnectToServer(string username)        //Verbinden
+        public void ConnectToServer(string username)
         {
             if (!tcpClient.Connected)
             {
                 tcpClient.Connect("127.0.0.1", 49459);
                 var connectPacket = new PacketBuilder();
 
-                if (!string.IsNullOrEmpty(username)) 
+                if (!string.IsNullOrEmpty(username))
                 {
                     PacketReader = new PacketReader(tcpClient.GetStream());
                     connectPacket.WriteOpCode(0);
                     connectPacket.WriteString(username);
-                    tcpClient.Client.Send(connectPacket.GetPacketByte());
+                    tcpClient.Client.Send(connectPacket.GetPacketBytes());
                 }
-
-                ReadPackets();
             }
-        } 
-        
+        }
+
+
         private void ReadPackets()
         {
+            //Prüfen ob der Stream noch Daten enthält bevor der Opcode interpretiert wird
             Task.Run(() =>
             {
-                while (true)
+                try
                 {
-                    var opcode = PacketReader.ReadByte();
-                    switch (opcode)
+                    if (PacketReader.BaseStream.Position < PacketReader.BaseStream.Length)       //Prüfe ob bereits am Ende des Streams
                     {
-                        case 1:
-                            connected?.Invoke();
-                            break;
-                        default:
-                            Console.WriteLine("...___...");
-                            break;
-                            
+                        var opcode = PacketReader.ReadByte();
+                        switch (opcode)                                                          //Mache das was der Opcode dir sagt
+                        {
+                            case 1:
+                                connected?.Invoke();
+                                break;
+
+                            case 5:
+                                msgRecieved?.Invoke();
+                                break;
+
+                            case 10:
+                                disconnected?.Invoke();
+                                break;
+
+                            default:
+                                Console.WriteLine("FEHLER: Opcode nicht bekannt" + opcode);
+                                break;
+                        }
                     }
+                    else
+                    {
+                        Console.WriteLine($"---Stream beendet---");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex.Message}");
                 }
             });
         }
+
+        public void SendMessageToServer(string message)
+        {
+            var messagePacket = new PacketBuilder();
+            messagePacket.WriteOpCode(5);
+            messagePacket.WriteString(message);
+            tcpClient.Client.Send(messagePacket.GetPacketBytes());
+        }
     }
+
 }

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:chat" xmlns:viewmodel="clr-namespace:client.MVVM.ViewModel"
+        xmlns:viewmodel="clr-namespace:client.MVVM.ViewModel"
         mc:Ignorable="d"
         Title="Chad v.05" Height="475" Width="805">
 
@@ -27,7 +27,7 @@
                     Content="Verbinden"
                     Command="{Binding ConnectToServerC}"/>
             <ListView ItemsSource="{Binding Users}">
-                <ListView.ItemTemplate>
+                <ListView.ItemTemplate> 
                     <DataTemplate>
                         <TextBlock Text="{Binding username}"/>
                     </DataTemplate>
@@ -36,13 +36,16 @@
         </DockPanel>
 
         <StackPanel Grid.Column="1">
-            <ListView Height="380" />
+            <ListView Height="380" SelectionChanged="ListView_SelectionChanged"
+                      ItemsSource="{Binding Messages}"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox Height="55"
                          Width="535"
-                         VerticalAlignment="Center"/>
+                         VerticalAlignment="Center"
+                         Text="{Binding Message, UpdateSourceTrigger=PropertyChanged}"/>
                 <Button Width="55"
-                        Content="Senden"/>
+                        Content="Senden"
+                        Command="{Binding SendMessageC}"/>
             </StackPanel>
         </StackPanel>
 

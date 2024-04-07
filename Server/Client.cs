@@ -1,32 +1,87 @@
 ﻿using Server.Net.IO;
 using System;
+using Server;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Server
 {
     class Client
     {
         public string username { get; set; }
+        public static List<Client> clients { get; private set; } = new List<Client>();
+
         public Guid id { get; set; }
         public TcpClient clientSocket;
 
         PacketReader packetReader;
 
-        public Client (TcpClient client)
+        public Client(TcpClient client)
         {
             clientSocket = client;
             id = Guid.NewGuid();
             packetReader = new PacketReader(clientSocket.GetStream());
 
-            var opcode = packetReader.ReadByte();
-            username = packetReader.ReadString();
-            
+
+            if (packetReader != null)       //Prüfe ob Packet Reader da ist 
+            {
+                var opcode = packetReader.ReadByte();
+                switch (opcode)
+                {
+                    case 1:
+                        var username = packetReader.ReadString();
+                        Console.WriteLine($"[{DateTime.Now}] Neuer Client -- {username} -- verbunden");
+                        break;
+                    case 5:
+                        var msg = packetReader.ReadString();
+                        Console.WriteLine($"[{DateTime.Now}]: {msg}");
+                        Programm.BroadcastMessage(msg);
+                        break;
+                    case 10:
+                        var id = packetReader.ReadString();
+                        Programm.BroadcastDisconnectMessage(id);
+                        break;
+                    default:
+                        Console.WriteLine("FEHLER: Opcode nicht bekannt" + opcode);
+                        break;
+                }
+            }
+
             Console.WriteLine($"[{DateTime.Now}] Neuer Client -- {username} -- verbunden");     //Ansage für neu verbundene Clients
+
+            Task.Run(() => Process());
         }
 
+        void Process()
+        {
+            try
+            {
+                var opcode = packetReader.ReadByte();
+                switch (opcode)
+                {
+                    case 5:
+                        var msg = packetReader.ReadString();
+                        Console.WriteLine($"[{DateTime.Now}]: {msg}");
+                        Programm.BroadcastMessage(msg);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            catch(Exception ex)
+            {
+                Console.WriteLine($"[{id}]: Verbindung verloren - {ex.Message}");
+            }
+            finally
+            {
+                clientSocket.Close();
+                clients.Remove(this);
+            }
+        }
     }
 }

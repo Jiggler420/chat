@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Server.Net.IO
+namespace server.Net.IO
 {
-    class PacketReader : BinaryReader
+    public class PacketReader
     {
-        private NetworkStream _networkStream;
-        public PacketReader(NetworkStream networkStream) : base(networkStream)  
+        private BinaryReader reader;
+
+        public PacketReader(Stream stream)
         {
-            _networkStream = networkStream;
+            reader = new BinaryReader(stream);
         }
 
-        public string ReadMessage()
+        public byte ReadByte()
         {
-            byte[] buffer;
-            var length = ReadInt32();
-            buffer = new byte[length];
-            _networkStream.Read(buffer, 0, length);
+            return reader.ReadByte();
+        }
 
-            var msg = Encoding.UTF8.GetString(buffer);
-
-            return msg;
+        public string ReadString()
+        {
+            int length = reader.ReadInt32(); // Länge des Strings lesen
+            byte[] bytes = reader.ReadBytes(length); // Bytes des Strings lesen
+            return Encoding.UTF8.GetString(bytes); // Bytes in einen String umwandeln
         }
     }
 }

@@ -1,35 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace client.Net.IO
 {
-    class PacketBuilder
+    public class PacketBuilder
     {
-        MemoryStream ms;
+        private MemoryStream stream;
+        private BinaryWriter writer;
+
         public PacketBuilder()
         {
-            ms = new MemoryStream();
+            stream = new MemoryStream();
+            writer = new BinaryWriter(stream);
         }
 
-        public void WriteOpCode(byte opcode)
+        public void WriteOpCode(byte opCode)
         {
-            ms.WriteByte(opcode);
+            writer.Write(opCode);
         }
 
-        public void WriteString(string msg)
+        public void WriteString(string value)
         {
-            var msgLength = msg.Length;
-            ms.Write(BitConverter.GetBytes(msgLength));     //Bytes aus dem String msg in den MemoryStream
-            ms.Write(Encoding.ASCII.GetBytes(msg));         //Speichert die ascii-zeichen aus dem string msg in den MemoryStream
+            writer.Write(value);
         }
 
-        public byte[] GetPacketByte()
+        public byte[] GetPacketBytes()
         {
-            return ms.ToArray();
+            return stream.ToArray();
         }
     }
 }
