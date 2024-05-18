@@ -1,12 +1,5 @@
-﻿using Server.Net.IO;
-using System;
-using Server;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Net.Sockets;
+using server.Net.IO;
 
 namespace Server
 {
@@ -60,16 +53,19 @@ namespace Server
         {
             try
             {
-                var opcode = packetReader.ReadByte();
-                switch (opcode)
+                while (clientSocket.Connected)
                 {
-                    case 5:
-                        var msg = packetReader.ReadString();
-                        Console.WriteLine($"[{DateTime.Now}]: {msg}");
-                        Programm.BroadcastMessage(msg);
-                        break;
-                    default:
-                        break;
+                    var opcode = packetReader.ReadByte();
+                    switch (opcode)
+                    {
+                        case 5:
+                            var msg = packetReader.ReadString();
+                            Console.WriteLine($"[{DateTime.Now}]: {msg}");
+                            Programm.BroadcastMessage(msg);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 

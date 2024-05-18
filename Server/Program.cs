@@ -1,4 +1,4 @@
-﻿using Server.Net.IO;
+﻿using server.Net.IO;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -14,16 +14,16 @@ namespace Server
         {
             clients = new List<Client>();
 
-            listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 49459);
+            listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 49459);    
             listener.Start();
 
             while (true)
             {
-                var clientSocket = listener.AcceptTcpClient();
+                var clientSocket = listener.AcceptTcpClient();          
                 var client = new Client(clientSocket);
                 clients.Add(client);
                 BroadcastConnection(); // Hier Broadcast nachdem ein neuer Client verbunden wurde
-                BroadcastMessage("Ein neuer Client ist verbunden."); // Beispiel für Broadcast-Nachricht
+                BroadcastMessage("Ein neuer Client ist verbunden.");
             }
         }
 
@@ -45,6 +45,7 @@ namespace Server
             }
         }
 
+        //Broadcasts
         public static void BroadcastMessage(string message)
         {
             foreach (var client in clients)
@@ -56,7 +57,7 @@ namespace Server
             }
         }
 
-
+        //Nachricht wenn ein sich ein Client abmeldet
         public static void BroadcastDisconnectMessage(string id)
         {
             var disconnectedClient = clients.FirstOrDefault(x => x.id.ToString() == id);

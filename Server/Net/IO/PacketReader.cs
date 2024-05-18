@@ -18,11 +18,12 @@ namespace server.Net.IO
             return reader.ReadByte();
         }
 
+        //Nachricht lesen
         public string ReadString()
         {
-            int length = reader.ReadInt32(); // Länge des Strings lesen
-            byte[] bytes = reader.ReadBytes(length); // Bytes des Strings lesen
-            return Encoding.UTF8.GetString(bytes); // Bytes in einen String umwandeln
+            int length = reader.ReadInt32(); 
+            byte[] bytes = reader.ReadBytes(length); 
+            return Encoding.UTF8.GetString(bytes); 
         }
     }
 }

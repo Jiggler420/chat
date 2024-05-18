@@ -11,8 +11,8 @@ namespace server.Net.IO
 
         public PacketBuilder()
         {
-            stream = new MemoryStream();
-            writer = new BinaryWriter(stream);
+            stream = new MemoryStream();            //Zwischenspeicher
+            writer = new BinaryWriter(stream);      //schreibt Daten in Zwischenspeicher
         }
 
         public void WriteOpCode(byte opCode)

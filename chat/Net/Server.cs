@@ -26,18 +26,25 @@ namespace client.Net
 
         public void ConnectToServer(string username)
         {
-            if (!tcpClient.Connected)
+            try
             {
-                tcpClient.Connect("127.0.0.1", 49459);
-                var connectPacket = new PacketBuilder();
-
-                if (!string.IsNullOrEmpty(username))
+                if (!tcpClient.Connected)
                 {
-                    PacketReader = new PacketReader(tcpClient.GetStream());
-                    connectPacket.WriteOpCode(0);
-                    connectPacket.WriteString(username);
-                    tcpClient.Client.Send(connectPacket.GetPacketBytes());
+                    tcpClient.Connect("127.0.0.1", 49459);
+                    var connectPacket = new PacketBuilder();
+
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        PacketReader = new PacketReader(tcpClient.GetStream());
+                        connectPacket.WriteOpCode(0);
+                        connectPacket.WriteString(username);
+                        tcpClient.Client.Send(connectPacket.GetPacketBytes());
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler beim Verbinden zum Server: {ex.Message}");
             }
         }
 
@@ -49,7 +56,7 @@ namespace client.Net
             {
                 try
                 {
-                    if (PacketReader.BaseStream.Position < PacketReader.BaseStream.Length)       //Prüfe ob bereits am Ende des Streams
+                    if (tcpClient.Available > 0)                                                  //Prüfe ob Daten vorhanden sind
                     {
                         var opcode = PacketReader.ReadByte();
                         switch (opcode)                                                          //Mache das was der Opcode dir sagt
